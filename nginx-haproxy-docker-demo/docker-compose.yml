@@ -1,0 +1,39 @@
+version: "3"
+services:
+  nginx_master:
+    image: nginx:latest
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx-master.conf:/etc/nginx/nginx.conf
+      - ./index-master.html:/usr/share/nginx/html/index.html
+      - ./favicon.ico:/usr/share/nginx/html/favicon.ico
+    networks:
+      - web-network
+
+  nginx_slave:
+    image: nginx:latest
+    ports:
+      - "8082:80"
+    volumes:
+      - ./nginx-slave.conf:/etc/nginx/nginx.conf
+      - ./index-slave.html:/usr/share/nginx/html/index.html
+      - ./favicon.ico:/usr/share/nginx/html/favicon.ico
+    networks:
+      - web-network
+
+  haproxy:
+    image: haproxy:1.7-alpine
+    ports:
+      - "8000:80"
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    networks:
+      - web-network
+    depends_on:
+      - nginx_master
+      - nginx_slave
+
+networks:
+  web-network:
+    driver: bridge
